@@ -107,8 +107,8 @@ def jarvis_patrick(
     n = len(data)
     clusters = np.zeros(n, dtype=int)
     print("params",params_dict)
-    smin= 0.15
-    k = 10
+    smin= 5
+    k = 5
     for i in range(n):
         neighbors = np.argsort(distances[i])[:k]
         for j in neighbors:
@@ -183,10 +183,10 @@ def jarvis_patrick_clustering():
         slice_labels[i]=selected_labels[i*1000:(i+1)*1000]
     print("slice0",slice[0].shape) 
     print("slice0labels",slice_labels[0].shape) 
-    #smin_values = [4,6,8,10]
-    #k_values = [3,5,7,8]
-    smin_values = [0.15]
-    k_values = [10]
+    smin_values = [4,6,8,10]
+    k_values = [3,5,7,8]
+    #smin_values = [0.15]
+    #k_values = [10]
     groups=[]
     sse_list1=[]
     ari_list1=[]
