@@ -167,7 +167,7 @@ def spectral_clustering():
             best_sigma = sigma
     print(f"The sigma value with the highest ARI is: {best_sigma} (ARI: {max_ari})")
     params_dict = {
-    'sigma':best_sigma,  # Creates 100 values from 0.1 to 10 evenly spaced
+    'sigma':0.2,  # Creates 100 values from 0.1 to 10 evenly spaced
     'k': 5  # Number of clusters
 }
     max_ari2 = -float('inf')
