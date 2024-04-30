@@ -183,8 +183,10 @@ def jarvis_patrick_clustering():
         slice_labels[i]=selected_labels[i*1000:(i+1)*1000]
     print("slice0",slice[0].shape) 
     print("slice0labels",slice_labels[0].shape) 
-    smin_values = [4,6,8,10]
-    k_values = [3,5,7,8]
+    #smin_values = [4,6,8,10]
+    #k_values = [3,5,7,8]
+    smin_values = [0.15]
+    k_values = [10]
     groups=[]
     sse_list1=[]
     ari_list1=[]
