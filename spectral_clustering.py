@@ -103,10 +103,10 @@ def spectral(
     #print(f"sigma:{sigma_list[i]}SSE {sse}:")
     ARI =calculate_ari(labels,computed_labels)
     #print(f"sigma:{sigma_list[i]}ARI {ari}:")
-    computed_labels: NDArray[np.int32] | None = None
+    """computed_labels: NDArray[np.int32] | None = None
     SSE: float | None = None
     ARI: float | None = None
-    eigenvalues: NDArray[np.floating] | None = None
+    eigenvalues: NDArray[np.floating] | None = None"""
 
     return computed_labels, SSE, ARI, eigenvalues
 
