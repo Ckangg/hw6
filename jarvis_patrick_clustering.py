@@ -107,8 +107,8 @@ def jarvis_patrick(
     n = len(data)
     clusters = np.zeros(n, dtype=int)
     print("params",params_dict)
-    smin= 5
-    k = 5
+    smin= 0.15
+    k = 10
     for i in range(n):
         neighbors = np.argsort(distances[i])[:k]
         for j in neighbors:
