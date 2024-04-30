@@ -2,10 +2,27 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.typing import NDArray
-from sklearn.metrics import confusion_matrix
+
 
 # ----------------------------------------------------------------------
+def confusion_matrix_numpy(y_true, y_pred):
+    """
+    Calculate the confusion matrix using NumPy.
 
+    Args:
+    - y_true (numpy.ndarray): True labels.
+    - y_pred (numpy.ndarray): Predicted labels.
+    - num_classes (int): Number of classes.
+
+    Returns:
+    - numpy.ndarray: Confusion matrix.
+    """
+    num_classes=2
+    confusion_mat = np.zeros((num_classes, num_classes), dtype=np.int64)
+    for i in range(num_classes):
+        for j in range(num_classes):
+            confusion_mat[i, j] = np.sum((y_true == i) & (y_pred == j))
+    return confusion_mat
 
 def compute_SSE(data, labels):
     """
@@ -27,8 +44,8 @@ def compute_SSE(data, labels):
     return sse
 
 
-def compute_ARI(confusion_matrix: NDArray[np.int32]):
-    """
+"""def compute_ARI(confusion_matrix: NDArray[np.int32]):
+    """"""
     Compute the Adjusted Rand Index (ARI) metric for evaluating the performance of a clustering algorithm.
     (I AM NOT CONVINCED THE RESULTS ARE CORRECT)
 
@@ -50,13 +67,13 @@ def compute_ARI(confusion_matrix: NDArray[np.int32]):
     - tn: True negatives (number of pairs of samples that are not in the same cluster in both the true and predicted labels)
     - fp: False positives (number of pairs of samples that are in the same cluster in the true labels but not in the predicted labels)
     - fn: False negatives (number of pairs of samples that are not in the same cluster in the true labels but in the predicted labels)
-    """
+    """"""
     tp = confusion_matrix[0, 0]
     tn = confusion_matrix[1, 1]
     fp = confusion_matrix[0, 1]
     fn = confusion_matrix[1, 0]
     ari = (tp * tn - fp * fn) / np.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
-    return ari
+    return ari"""
 
 
 def adjusted_rand_index(labels_true, labels_pred) -> float:
@@ -107,10 +124,6 @@ def adjusted_rand_index(labels_true, labels_pred) -> float:
     return ari
 
 
-# Example usage:
-true_labels = np.array([0, 0, 1, 1, 0, 1])
-pred_labels = np.array([1, 1, 0, 0, 1, 0])
-print(adjusted_rand_index(true_labels, pred_labels))
 
 # ----------------------------------------------------------------------
 
@@ -284,7 +297,7 @@ def gaussian_mixture():
     print(f"Data shape: {data.shape}")
     print(f"Labels shape: {labels.shape}")
 
-    def sample_estimate(data, labels, nb_samples=10000, max_iter=100):
+    def sample_estimate(data, labels, nb_samples=1000, max_iter=100):
         # ADD STUDENT CODE
         data_samples, label_samples = extract_samples(data, labels, nb_samples)
         weights, means, covariances, log_likelihoods, predicted_labels = em_algorithm(
@@ -310,7 +323,7 @@ def gaussian_mixture():
         # print("means: ", means)
         # print("weights: ", weights)
         # match the labels
-        confusion_mat = confusion_matrix(label_samples, predicted_labels)
+        confusion_mat = confusion_matrix_numpy(label_samples, predicted_labels)
         # answers["confusion_matrix"] = confusion_mat
 
         ARI = adjusted_rand_index(label_samples, predicted_labels)
@@ -322,7 +335,7 @@ def gaussian_mixture():
         return weights, means, covariances, log_likelihoods, confusion_mat, ARI, SSE
 
     # Call the function
-    data_samples, label_samples = extract_samples(data, labels, 10000)
+    data_samples, label_samples = extract_samples(data, labels, 1000)
 
     print(f"Data shape: {data_samples.shape}")
     print(f"Labels shape: {label_samples.shape}")
@@ -361,7 +374,7 @@ def gaussian_mixture():
     # --------------------------------------------------------------
     # 10 trials of 10,000 points each
     nb_trials = 10
-    nb_samples = 10000
+    nb_samples = 1000
     max_iter = max_iter
 
     means_lst = []
