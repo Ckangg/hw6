@@ -166,7 +166,10 @@ def spectral_clustering():
             max_ari = ari
             best_sigma = sigma
     print(f"The sigma value with the highest ARI is: {best_sigma} (ARI: {max_ari})")
-    
+    params_dict = {
+    'sigma':best_sigma,  # Creates 100 values from 0.1 to 10 evenly spaced
+    'k': 5  # Number of clusters
+}
     max_ari2 = -float('inf')
     target_sse = None
     for i in range(len(groups)):
@@ -179,7 +182,7 @@ def spectral_clustering():
     sse_list2=[]
     ari_list2=[]
     for i in range(5):
-        sigma=best_sigma
+        sigma=params_dict['sigma']
         smatrix=construct_similarity_matrix(slice[i],sigma)
         L_matrix=compute_l(smatrix)
         eigenvectors_L=calculate_eigens(L_matrix,number_clusters)
