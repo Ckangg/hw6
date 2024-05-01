@@ -235,7 +235,7 @@ def jarvis_patrick_clustering():
         for k in k_values:
             params_dict = {'k': k, 'smin': smin}
             computed_labels, SSE, ARI = jarvis_patrick(slice[0], slice_labels[0],params_dict)
-            groups.append( {"smin": smin, "k":k,"ARI": ari, "SSE": sse})
+            groups.append( {"smin": smin, "k":k,"ARI": ARI, "SSE": SSE})
     groups = {i: {'smin': group['smin'], 'k':group['k'],'ARI': group['ARI'], 'SSE': group['SSE']} for i, group in enumerate(groups)}
     """
     for smin in smin_values:
