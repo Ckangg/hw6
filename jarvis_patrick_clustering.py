@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy.typing import NDArray
 import pickle
+from scipy.special import comb
 
 ######################################################################
 #####     CHECK THE PARAMETERS     ########
@@ -103,12 +104,46 @@ def jarvis_patrick(
     - In this project, only consider unidirectional nearest neighboars for simplicity.
     - The metric  used to compute the the k-nearest neighberhood of all points is the Euclidean metric
     """
-    distances = compute_distances(data)
-    n = len(data)
-    clusters = np.zeros(n, dtype=int)
-    print("params",params_dict)
     smin= int(params_dict["smin"])
     k = int(params_dict["k"])
+    distances = compute_distances(data)
+    n = len(data)
+    neighbors  = np.argsort(distances, axis=1)[:, 1:k+1]
+    shared_neighbors = np.zeros_like(distances)
+    for i in range(len(data)):
+        for j in range(i+1, len(data)):
+            shared_count = np.intersect1d(neighbors[i], neighbors[j]).shape[0]
+            if shared_count >= smin:
+                shared_neighbors[i, j] = shared_neighbors[j, i] = 1
+    unvisited = set(range(len(data)))
+    clusters = []
+    while unvisited:
+        # Randomly pick an unvisited point
+        point = unvisited.pop()
+        cluster = [point]
+        points_to_visit = set(np.where(shared_neighbors[point] == 1)[0])
+        while points_to_visit:
+            point = points_to_visit.pop()
+            if point in unvisited:
+                unvisited.remove(point)
+                cluster.append(point)
+                new_neighbors = set(np.where(shared_neighbors[point] == 1)[0])
+                points_to_visit |= new_neighbors
+        clusters.append(cluster)
+    computed_labels = np.zeros(len(data), dtype=int)
+    for idx, cluster in enumerate(clusters):
+        computed_labels[cluster] = idx
+    #clusters = np.zeros(n, dtype=int)
+    #print("params",params_dict)
+    #smin= int(params_dict["smin"])
+    #k = int(params_dict["k"])
+    SSE = 0
+    for cluster in clusters:
+        points = data[cluster]
+        centroid = np.mean(points, axis=0)
+        SSE += np.sum((points - centroid) ** 2)
+    ARI = calculate_ari(labels, computed_labels)
+    """
     for i in range(n):
         neighbors = np.argsort(distances[i])[:k]
         for j in neighbors:
@@ -144,6 +179,7 @@ def jarvis_patrick(
     computed_labels: NDArray[np.int32] | None = None
     SSE: float | None = None
     ARI: float | None = None
+    """
 
     return computed_labels, SSE, ARI
 
@@ -183,8 +219,10 @@ def jarvis_patrick_clustering():
         slice_labels[i]=selected_labels[i*1000:(i+1)*1000]
     print("slice0",slice[0].shape) 
     print("slice0labels",slice_labels[0].shape) 
-    smin_values = [4,6,8,10]
-    k_values = [3,5,7,8]
+    k_values = np.linspace(3, 8, 5)
+    smin_values = np.linspace(4, 10, 5)
+    #smin_values = [4,6,8,10]
+    #k_values = [3,5,7,8]
     #smin_values = [0.15]
     #k_values = [10]
     groups=[]
@@ -193,6 +231,13 @@ def jarvis_patrick_clustering():
     best_smin = None
     best_ari = -1
     best_k = None
+    for smin in smin_values:
+        for k in k_values:
+            params_dict = {'k': k, 'smin': smin}
+            computed_labels, SSE, ARI = jarvis_patrick(slice[0], slice_labels[0],params_dict)
+            groups.append( {"smin": smin, "k":k,"ARI": ari, "SSE": sse})
+    groups = {i: {'smin': group['smin'], 'k':group['k'],'ARI': group['ARI'], 'SSE': group['SSE']} for i, group in enumerate(groups)}
+    """
     for smin in smin_values:
         for k in k_values:
             clusters = jarvis_patrick2(slice[0], smin, k)
@@ -220,13 +265,15 @@ def jarvis_patrick_clustering():
             plt.legend()
             plt.show()
     print(f"Best ARI: {best_ari}, smin={best_smin}, k={best_k}")
-    groups = {i: {'smin': group['smin'], 'k':group['k'],'ARI': group['ARI'], 'SSE': group['SSE']} for i, group in enumerate(groups)}
+""" 
     max_ari2 = -float('inf')
     target_sse = None
     for i in range(len(groups)):
             if groups[i]["ARI"] > max_ari2:
                 max_ari2 = groups[i]["ARI"]
                 target_sse = groups[i]["SSE"]
+                best_smin=groups[i]["smin"]
+                best_k=groups[i]["k"]
     average_sse = 0
     average_ari = 0
     sse_list2=[]
@@ -234,31 +281,19 @@ def jarvis_patrick_clustering():
     for i in range(5):
         smin=best_smin
         k=best_k
-        clusters = jarvis_patrick2(slice[i], smin, k)
-        sse = compute_sse(slice[i], clusters)
-        ari = calculate_ari(slice_labels[i], clusters-1)
-        print(f"SSE={sse}, ARI={ari}")
-        average_sse += sse
-        average_ari += ari
-        colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
-        markers = ['o', 's', '^', 'D', 'x']
-        n_clusters = len(np.unique(clusters))
-        plt.figure(figsize=(8, 6))
-        for j in range(1, n_clusters +1 ):
-                cluster_points = slice[i][clusters == j]
-                plt.scatter(cluster_points[:, 0], cluster_points[:, 1], c=colors[j % len(colors)], marker=markers[j % len(markers)], label=f'Cluster {j}')
-
-        plt.title(f'Cluster Visualization (slice{i})')
-        plt.xlabel('X')
-        plt.ylabel('Y')
-        plt.legend()
-        plt.show()
+        params_dict = {'k': k, 'smin': smin}
+        computed_labels, SSE, ARI = jarvis_patrick(slice[i], slice_labels[i],params_dict)
+        average_sse += SSE
+        average_ari += ARI
+        sse_list2.append(SSE)
+        ari_list2.append(ARI)
+        
+        
     average_sse /= 5  # Divide by the number of slices
     average_ari /= 5  # Divide by the number of slices
     std_sse=np.std(sse_list2)
     std_ari=np.std(ari_list2)
-    print(f"Average SSE: {average_sse}")
-    print(f"Average ARI: {average_ari}")
+    
     # data for data group 0: data[0:10000]. For example,
     # groups[0] = {"sigma": 0.1, "xi": 0.1, "ARI": 0.1, "SSE": 0.1}
 
@@ -268,7 +303,7 @@ def jarvis_patrick_clustering():
 
     # groups is the dictionary above
     answers["cluster parameters"] = groups
-    answers["1st group, SSE"] = {target_sse}
+    answers["1st group, SSE"] = groups[0]['SSE']
 
     # Create two scatter plots using `matplotlib.pyplot`` where the two
     # axes are the parameters used, with # \sigma on the horizontal axis
